@@ -1,1 +1,1 @@
-Runthe code in the browser: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nredick/intro-to-ml-GVP/main?urlpath=https%3A%2F%2Fgithub.com%2Fnredick%2Fintro-to-ml-GVP%2Fblob%2Fmain%2Fintro-to-ml.ipynb)
+Run the notebook in the browser: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nredick/intro-to-ml-GVP/main?urlpath=https%3A%2F%2Fgithub.com%2Fnredick%2Fintro-to-ml-GVP%2Fblob%2Fmain%2Fintro-to-ml.ipynb)
