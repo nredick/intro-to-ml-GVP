@@ -1,4 +1,9 @@
 name: Build and publish
+
+defaults:
+  run:
+    working-directory: presentation
+
 on:
   workflow_dispatch:
   pull_request:
