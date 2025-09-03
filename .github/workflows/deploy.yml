@@ -1,48 +1,54 @@
-name: Build and Deploy Slidev Presentation
+name: Deploy pages
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+  push:
+    branches: [main]
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
-  build_and_deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      # Set up Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: 'lts/*'
 
-      # Clear npm cache and install dependencies
-      - name: Clear npm cache and install dependencies
-        run: |
-          rm -rf node_modules
-          npm cache clean --force
-          cd presentation  # Change to the presentation directory
-          npm install
+      - name: Setup @antfu/ni
+        run: npm i -g @antfu/ni
 
-      # Build the Slidev presentation from the presentation directory
-      - name: Build the Slidev presentation
-        run: |
-          cd presentation
-          npm run build -- --base '/intro-to-ml-GVP/'  # Set the correct base URL for GitHub Pages
+      - name: Install dependencies
+        run: cd presentation && nci
 
-      # Deploy to GitHub Pages
+      - name: Build
+        run: cd presentation && nr build --base /${{github.event.repository.name}}/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: presentation/dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          branch: gh-pages  # Target branch for GitHub Pages
-          folder: ./presentation/dist  # Folder containing the built files
-          clean: true  # Clean the target branch before deployment
+        id: deployment
+        uses: actions/deploy-pages@v4
