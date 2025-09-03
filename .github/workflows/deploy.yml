@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -17,8 +14,8 @@ permissions:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+
     steps:
-      # Checkout the code
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -26,27 +23,26 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'  # You can change this to match the version you need
+          node-version: '16'
 
-      # Install dependencies
-      - name: Install dependencies
+      # Clear npm cache and install dependencies
+      - name: Clear npm cache and install dependencies
         run: |
-          cd presentation  # Go into the presentation directory
+          rm -rf node_modules
+          npm cache clean --force
+          cd presentation  # Change to the presentation directory
           npm install
 
-      # Build the Slidev presentation
+      # Build the Slidev presentation from the presentation directory
       - name: Build the Slidev presentation
         run: |
           cd presentation
-          npm run build -- --base '/intro-to-ml-GVP/'  # Adjust the base path as needed
+          npm run build -- --base '/intro-to-ml-GVP/'  # Set the correct base URL for GitHub Pages
 
       # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: ./presentation/dist # The folder the action should deploy.
-
-      # Optionally, verify the deployed files
-      - name: List the contents of the deployed folder
-        run: |
-          ls -alh ./presentation/dist
+          branch: gh-pages  # Target branch for GitHub Pages
+          folder: ./presentation/dist  # Folder containing the built files
+          clean: true  # Clean the target branch before deployment
