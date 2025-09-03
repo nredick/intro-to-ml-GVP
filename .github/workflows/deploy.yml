@@ -1,62 +1,52 @@
-name: Build and publish
-
-defaults:
-  run:
-    working-directory: presentation
+name: Build and Deploy Slidev Presentation
 
 on:
-  workflow_dispatch:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  build:
+  build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '16'  # You can change this to match the version you need
+
+      # Install dependencies
       - name: Install dependencies
-        run: npm install
-      - name: Build
-        run: npm run build -- --base '/slidev-deploy-gh-pages-deployed-via-gh-actions/'
+        run: |
+          cd presentation  # Go into the presentation directory
+          npm install
 
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v4
+      # Build the Slidev presentation
+      - name: Build the Slidev presentation
+        run: |
+          cd presentation
+          npm run build -- --base '/intro-to-ml-GVP/'  # Adjust the base path as needed
 
-      - name: List documents
-        run: ls -l -R
-        working-directory: dist
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: dist/
-
-  deploy:
-    if: github.ref == 'refs/heads/main'
-    needs: build
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
+      # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: ./presentation/dist # The folder the action should deploy.
+
+      # Optionally, verify the deployed files
+      - name: List the contents of the deployed folder
+        run: |
+          ls -alh ./presentation/dist
